@@ -1,7 +1,7 @@
 export interface IMealForm {
   mealTime: string;
   description: string;
-  calories: string;
+  calories: number;
 }
 
 export interface IMeal extends IMealForm {
