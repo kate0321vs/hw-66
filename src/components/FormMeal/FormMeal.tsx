@@ -1,10 +1,10 @@
 import { Button, Grid, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
 import { FormEvent, useState } from 'react';
-import { IPageForm } from '../../types';
+import { IMealForm } from '../../types';
 
 interface Props {
   isEdit?: boolean;
-  onSubmitAction: (newMeal: IPageForm) => void;
+  onSubmitAction: (newMeal: IMealForm) => void;
 }
 
 const initialState = {
@@ -14,7 +14,7 @@ const initialState = {
 }
 
 const FormMeal: React.FC<Props> = ({isEdit = false, onSubmitAction}) => {
-  const [form, setForm] = useState<IPageForm>(initialState);
+  const [form, setForm] = useState<IMealForm>(initialState);
   const meals = [
     {title: 'Breakfast', id: 'breakfast'},
     {title: 'Snack', id: 'Snack'},

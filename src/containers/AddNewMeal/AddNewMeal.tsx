@@ -1,5 +1,5 @@
 import FormMeal from '../../components/FormMeal/FormMeal.tsx';
-import { IPageForm } from '../../types';
+import { IMealForm } from '../../types';
 import axiosApi from '../../axiosApi.ts';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -9,7 +9,7 @@ const AddNewMeal = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const onSubmitAction = (newMeal: IPageForm) => {
+  const onSubmitAction = (newMeal: IMealForm) => {
     try {
       setLoading(true);
       axiosApi.post('meals.json', newMeal);
