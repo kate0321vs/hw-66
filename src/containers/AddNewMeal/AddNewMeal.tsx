@@ -1,10 +1,10 @@
 import FormMeal from '../../components/FormMeal/FormMeal.tsx';
-import { IMealForm } from '../../types';
+import { IMeal, IMealForm } from '../../types';
 import axiosApi from '../../axiosApi.ts';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import Spinner from '../../components/UI/Spinner/Spinner.tsx';
 import { toast } from 'react-toastify';
+import Loader from '../../components/UI/Loader/Loader.tsx';
 
 const AddNewMeal = () => {
   const navigate = useNavigate();
@@ -13,8 +13,8 @@ const AddNewMeal = () => {
   const onSubmitAction = async (newMeal: IMealForm) => {
     try {
       setLoading(true);
-      await axiosApi.post('meals.json', newMeal);
-      toast.success('Game was added Successfully!');
+      await axiosApi.post<IMeal>('meals.json', newMeal);
+      toast.success('Meal was added Successfully!');
       navigate('/');
     } catch (e) {
       alert(e);
@@ -25,7 +25,7 @@ const AddNewMeal = () => {
 
   return (
     <>
-      {loading ? <Spinner /> :
+      {loading ? <Loader/> :
         <FormMeal onSubmitAction={onSubmitAction}/>
       }
     </>

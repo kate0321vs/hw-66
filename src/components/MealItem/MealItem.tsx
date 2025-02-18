@@ -1,16 +1,19 @@
 import { Button, Card, CardContent, Grid, Typography } from '@mui/material';
 import editIcon from '../../assets/edit.svg';
-import deleteIcon from '../../assets/delete.svg';
+import { NavLink } from 'react-router-dom';
+import React from 'react';
+import { IMeal } from '../../types';
 
 interface Props {
-  mealTime: string;
-  description: string;
-  calories: number;
-  onDelete: () => void;
-  isLoading?: boolean;
+  meal: IMeal;
+  onDelete: (id: string) => void;
+  loading: boolean;}
+
+function SaveIcon() {
+  return null;
 }
 
-const MealItem: React.FC<Props> = ({mealTime, description, calories, onDelete}) => {
+const MealItem: React.FC<Props> = (({meal, onDelete, loading}) => {
   return (
     <Card
       sx={{
@@ -25,24 +28,32 @@ const MealItem: React.FC<Props> = ({mealTime, description, calories, onDelete}) 
     >
       <CardContent sx={{flexGrow: 1}}>
         <Typography variant="subtitle1" color="textSecondary">
-          {mealTime}
+          {meal.mealTime}
         </Typography>
-        <Typography variant="body1">{description}</Typography>
+        <Typography variant="body1">{meal.description}</Typography>
       </CardContent>
 
       <Typography variant="body1" sx={{fontWeight: 'bold', mx: 30}}>
-        {calories} kcal
+        {meal.calories} kcal
       </Typography>
       <Grid>
-        <Button>
+        <Button component={NavLink} to={`edit-meal/${meal.id}`}>
           <img style={{width: 20}} src={editIcon} alt="Edit"/>
         </Button>
-        <Button onClick={onDelete}>
-          <img style={{width: 20}} src={deleteIcon} alt="Delete"/>
+        <Button
+          size="small"
+          color="error"
+          onClick={() => onDelete(meal.id)}
+          loading={loading}
+          loadingPosition="start"
+          startIcon={<SaveIcon />}
+          variant="contained"
+        >
+          Delete
         </Button>
       </Grid>
     </Card>
   );
-};
-
+}
+)
 export default MealItem;

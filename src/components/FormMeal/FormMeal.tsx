@@ -1,10 +1,15 @@
 import { Button, Grid, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
-import { FormEvent, useState } from 'react';
-import { IMealForm } from '../../types';
+import { FormEvent, useCallback, useEffect, useState } from 'react';
+import {  IMealForm } from '../../types';
+import axiosApi from '../../axiosApi.ts';
+import ButtonSpinner from '../UI/Loader/ButtonSpinner/ButtonSpinner.tsx';
+import Loader from '../UI/Loader/Loader.tsx';
 
 interface Props {
   isEdit?: boolean;
   onSubmitAction: (newMeal: IMealForm) => void;
+  idMeal?: string;
+  isLoading?: boolean;
 }
 
 const initialState = {
@@ -13,28 +18,54 @@ const initialState = {
   calories: '',
 }
 
-const FormMeal: React.FC<Props> = ({isEdit = false, onSubmitAction}) => {
+const FormMeal: React.FC<Props> = ({isEdit = false, onSubmitAction, idMeal, isLoading = false }) => {
   const [form, setForm] = useState<IMealForm>(initialState);
+  const [loading, setLoading] = useState(false);
   const meals = [
     {title: 'Breakfast', id: 'breakfast'},
-    {title: 'Snack', id: 'Snack'},
+    {title: 'Snack', id: 'snack'},
     {title: 'Lunch', id: 'lunch'},
     {title: 'Dinner', id: 'dinner'}
   ];
 
+  const fetchOneMeal = useCallback( async () => {
+    if (idMeal) {
+      try {
+        setLoading(true);
+        const response = await axiosApi<IMealForm | null>(`meals/${idMeal}.json`)
+        console.log(response)
+        if (response.data) {
+          setForm(response.data);
+        }
+      } catch(e) {
+        alert(e)
+      } finally {
+        setLoading(false);
+      }
+    }
+  }, [idMeal])
+
+  useEffect(() => {
+    void fetchOneMeal()
+  }, [fetchOneMeal])
+
+
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSubmitAction({...form});
-    console.log(form);
   }
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
     const {name, value} = e.target;
+    console.log(typeof value);
     setForm({...form, [name]: value});
   }
 
+  console.log(idMeal);
+
 
   return (
+    loading ? <Loader /> :
     <form onSubmit={onSubmit}>
       <Typography variant="h4" sx={{flexGrow: 1, textAlign: 'center'}}>
         {isEdit ? 'Edit Meal' : 'Add Meal'}
@@ -48,6 +79,8 @@ const FormMeal: React.FC<Props> = ({isEdit = false, onSubmitAction}) => {
             fullWidth
             displayEmpty
             onChange={onChange}
+            disabled={isLoading}
+            required
           >
             <MenuItem value="" disabled>
               Select meal time
@@ -68,6 +101,7 @@ const FormMeal: React.FC<Props> = ({isEdit = false, onSubmitAction}) => {
             variant="outlined"
             onChange={onChange}
             value={form.description}
+            disabled={isLoading}
             required
           />
         </Grid>
@@ -78,15 +112,17 @@ const FormMeal: React.FC<Props> = ({isEdit = false, onSubmitAction}) => {
             label="Calories"
             name="calories"
             variant="outlined"
+            type="number"
             onChange={onChange}
             value={form.calories}
+            disabled={isLoading}
             required
           />
         </Grid>
 
         <Grid xs={12}>
-          <Button sx={{width: '100%'}} type="submit" variant="contained">
-            {isEdit ? 'Edit' : 'Add'}
+          <Button sx={{width: '100%', marginTop: 3}} type="submit" variant="contained" disabled={isLoading}>
+            {isLoading ? <ButtonSpinner/> : (isEdit ? 'Edit' : 'Add')}
           </Button>
         </Grid>
       </Grid>

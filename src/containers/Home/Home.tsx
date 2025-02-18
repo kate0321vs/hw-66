@@ -1,30 +1,33 @@
-import { Button, Container } from '@mui/material';
+import { Button, Container, Grid, Typography } from '@mui/material';
 import { NavLink } from 'react-router-dom';
 import { useCallback, useEffect, useState } from 'react';
-import { IMeal } from '../../types';
+import { IMeal, IMealApi } from '../../types';
 import axiosApi from '../../axiosApi.ts';
-import Spinner from '../../components/UI/Spinner/Spinner.tsx';
 import MealItem from '../../components/MealItem/MealItem.tsx';
+import { toast } from 'react-toastify';
+import Loader from '../../components/UI/Loader/Loader.tsx';
 
 const Home = () => {
-  const [meals, setMeals] = useState<IMeal[]>([])
-  const [loading, setLoading] = useState<boolean>(true);
+  const [meals, setMeals] = useState<IMeal[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
 
-  const fetchMeals = useCallback( async () => {
+
+  const fetchMeals = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axiosApi('/meals.json');
+      const response = await axiosApi<IMealApi | null>('/meals.json');
       if (response.data) {
         const mealsObject = response.data;
         const mealsArr = Object.keys(mealsObject).map((key) => {
-          return{
+          return {
             ...mealsObject[key],
-            id: key
+            id: key,
           }
         });
         setMeals(mealsArr);
       }
-    } catch(e) {
+    } catch (e) {
       alert(e)
     } finally {
       setLoading(false);
@@ -35,38 +38,57 @@ const Home = () => {
     void fetchMeals()
   }, [fetchMeals])
 
-  const deleteMeal = async (id: string) => {
-    if (id) {
-      if (window.confirm("Are you sure you want to delete this meal?")) {
-        try {
+  const totalCalories = meals.reduce((acc, meal) => {
+    return acc + Number(meal.calories);
+  }, 0);
+
+  const deleteMeal = useCallback(
+    async (id: string) => {
+      try {
+        setDeleteLoading(true);
+
+        if (window.confirm('Are you sure you want to delete meal?')) {
           await axiosApi.delete(`/meals/${id}.json`);
           setMeals([]);
-          void fetchMeals();
-        } catch(e) {
-          alert(e)
+          await fetchMeals();
+          toast.info('Meal deleted successfully.');
         }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setDeleteLoading(false);
       }
-    }
-  };
+    },
+    [fetchMeals, meals],
+  );
 
   return (
     <>
-      <Container>
-        <Button variant="contained" component={NavLink} to="/new-meal">
-          Add new meal
-        </Button>
-        {loading ? <Spinner/> :
-          meals.map((meal) => (
-            <MealItem key={meal.id}
-                      mealTime={meal.mealTime}
-                      description={meal.description}
-                      calories={meal.calories}
-                      onDelete={() => deleteMeal(meal.id)}
-                     />
-          ))}
-      </Container>
+      {loading ? <Loader/> :
+        <Container>
+          <Grid container spacing={6} alignItems="center" justifyContent="space-between">
+            <Grid item>
+              <Typography variant="h6">
+                <strong>Total calories:</strong> {totalCalories} kcal
+              </Typography>
+            </Grid>
+            <Grid item>
+              <Button variant="contained" component={NavLink} to="/new-meal">
+                Add new meal
+              </Button>
+            </Grid>
+          </Grid>
+          {
+            meals.map((meal) => (
+              <MealItem key={meal.id}
+                        meal={meal}
+                        onDelete={deleteMeal}
+                        loading={deleteLoading}
+              />
+            ))}
+        </Container>
+      }
     </>
-
   );
 };
 
